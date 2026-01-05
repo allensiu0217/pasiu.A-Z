@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>N1 字母大冒險 A-Z</title>
+    <style>
+        :root {
+            --primary-bg: #fff9c4;
+            --ocean-blue: #03a9f4;
+            --apple-red: #ff5252;
+            --grass-green: #4caf50;
+            --font-family: 'Comic Sans MS', 'Chalkboard SE', 'Microsoft JhengHei', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-bg);
+            font-family: var(--font-family);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* 封面選擇介面 */
+        #menu-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, #fffde7 0%, #fff9c4 100%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .floating-deco {
+            position: absolute;
+            font-size: 3rem;
+            animation: float 4s ease-in-out infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        .title-box {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            box-shadow: 0 10px 0 #fdd835;
+            margin-bottom: 40px;
+            border: 5px solid #ffeb3b;
+        }
+
+        .menu-btn {
+            width: 80vw;
+            max-width: 450px;
+            padding: 20px;
+            margin: 12px;
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-group1 { background-color: #ff7043; border-bottom: 8px solid #d84315; }
+        .btn-group2 { background-color: #42a5f5; border-bottom: 8px solid #1565c0; }
+        .btn-group3 { background-color: #66bb6a; border-bottom: 8px solid #2e7d32; }
+
+        /* 遊戲介面 */
+        .game-bar {
+            width: 90vw;
+            max-width: 600px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            z-index: 10;
+        }
+
+        .progress-map {
+            flex-grow: 1;
+            height: 15px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin-left: 15px;
+            position: relative;
+            border: 2px solid #bdbdbd;
+        }
+
+        .progress-pin {
+            position: absolute;
+            top: -18px;
+            transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 1.8rem;
+            filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.1));
+        }
+
+        .stage {
+            width: 95vw;
+            height: 65vh;
+            max-width: 700px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-around;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            border: 12px solid #81d4fa;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .letter-group {
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .letter-group:active { transform: scale(0.9); }
+
+        .upper-case { font-size: 10rem; font-weight: bold; color: var(--apple-red); line-height: 1; filter: drop-shadow(4px 4px 0 #ffebee); }
+        .lower-case { font-size: 7rem; font-weight: bold; color: var(--ocean-blue); line-height: 1; filter: drop-shadow(3px 3px 0 #e1f5fe); }
+
+        .treasure-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .card {
+            perspective: 1000px;
+            height: 130px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1.2);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner { transform: rotateY(180deg); }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+
+        .card-front { background: linear-gradient(135deg, #ffccbc 0%, #ffab91 100%); border: 4px solid white; font-size: 3.5rem; }
+        .card-front::after { content: "🎁"; }
+        
+        .card-back { background-color: #e8f5e9; transform: rotateY(180deg); border: 4px solid var(--grass-green); flex-direction: column; }
+
+        .icon { font-size: 4.5rem; }
+        .name { font-size: 1rem; font-weight: bold; color: #333; margin-top: 5px; }
+
+        .btn {
+            padding: 15px 60px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 60px;
+            cursor: pointer;
+            background: var(--grass-green);
+            color: white;
+            box-shadow: 0 8px 0 #2e7d32;
+        }
+
+        .btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #2e7d32; }
+        .btn:disabled { background: #ccc; box-shadow: 0 8px 0 #999; cursor: not-allowed; opacity: 0.7; }
+
+        #win-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: white;
+            z-index: 3000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 封面介面 -->
+    <div id="menu-screen">
+        <div class="floating-deco" style="top:10%; left:10%;">🦒</div>
+        <div class="floating-deco" style="top:20%; right:15%; animation-delay: -1s;">🍎</div>
+        <div class="floating-deco" style="bottom:15%; left:15%; animation-delay: -2s;">🎨</div>
+        <div class="floating-deco" style="bottom:25%; right:10%; animation-delay: -3s;">🦁</div>
+
+        <div class="title-box">
+            <h1 style="font-size: 2.8rem; color: #5d4037; margin: 0;">字母大發現 🎁</h1>
+            <p style="color: #f57f17; font-weight: bold; margin-top: 10px;">選一個寶庫開始玩吧！</p>
+        </div>
+        
+        <button class="menu-btn btn-group1" onclick="startGame(0, 9)">
+            <span>A - J</span> <span>🚀</span>
+        </button>
+        <button class="menu-btn btn-group2" onclick="startGame(10, 17)">
+            <span>K - R</span> <span>🌈</span>
+        </button>
+        <button class="menu-btn btn-group3" onclick="startGame(18, 25)">
+            <span>S - Z</span> <span>🏰</span>
+        </button>
+    </div>
+
+    <!-- 遊戲頂部欄 -->
+    <div class="game-bar">
+        <div style="font-weight: bold; color: #f57f17; font-size: 1.3rem;">✨ 找到: <span id="count-text">0</span> / 3</div>
+        <div class="progress-map">
+            <div class="progress-pin" id="prog-pin">🏃</div>
+        </div>
+    </div>
+
+    <!-- 遊戲主舞台 -->
+    <div class="stage">
+        <div class="letter-group" onclick="speakLetter()">
+            <span class="upper-case" id="upper">A</span>
+            <span class="lower-case" id="lower">a</span>
+        </div>
+
+        <h2 id="instruction" style="color: #ef6c00; font-size: 1.8rem; margin: 10px 0;">打開 3 個盒子吧！🎁</h2>
+
+        <div class="treasure-grid" id="grid"></div>
+    </div>
+
+    <!-- 下一步按鈕 -->
+    <div style="margin-top: 25px;">
+        <button class="btn" id="nextBtn" onclick="nextLevel()" disabled>下一個 ➔</button>
+    </div>
+
+    <!-- 結局畫面 -->
+    <div id="win-screen">
+        <div style="font-size: 8rem;">🎉</div>
+        <h1 id="win-title" style="font-size: 3rem; color: #ef5350;">挑戰完成！</h1>
+        <p style="font-size: 1.5rem; color: #5d4037; margin-bottom: 30px;">你好棒喔！</p>
+        <button class="btn" onclick="location.reload()">回主選單</button>
+    </div>
+
+    <script>
+        const fullData = [
+            { u: 'A', l: 'a', ex: [{i:'🍎', n:'Apple'}, {i:'🐜', n:'Ant'}, {i:'🐊', n:'Alligator'}, {i:'🚑', n:'Ambulance'}, {i:'✈️', n:'Airplane'}]},
+            { u: 'B', l: 'b', ex: [{i:'🐦', n:'Bird'}, {i:'🍌', n:'Banana'}, {i:'🐻', n:'Bear'}, {i:'🚌', n:'Bus'}, {i:'🔔', n:'Bell'}]},
+            { u: 'C', l: 'c', ex: [{i:'🐱', n:'Cat'}, {i:'🚗', n:'Car'}, {i:'🍰', n:'Cake'}, {i:'🕯️', n:'Candle'}, {i:'🌽', n:'Corn'}]},
+            { u: 'D', l: 'd', ex: [{i:'🐶', n:'Dog'}, {i:'🦆', n:'Duck'}, {i:'🥁', n:'Drum'}, {i:'🐬', n:'Dolphin'}, {i:'🍩', n:'Donut'}]},
+            { u: 'E', l: 'e', ex: [{i:'🐘', n:'Elephant'}, {i:'🥚', n:'Egg'}, {i:'👂', n:'Ear'}, {i:'🦅', n:'Eagle'}, {i:'🔌', n:'Electricity'}]},
+            { u: 'F', l: 'f', ex: [{i:'🐟', n:'Fish'}, {i:'🐸', n:'Frog'}, {i:'🌸', n:'Flower'}, {i:'🍟', n:'Fries'}, {i:'🦊', n:'Fox'}]},
+            { u: 'G', l: 'g', ex: [{i:'🦍', n:'Gorilla'}, {i:'🍇', n:'Grapes'}, {i:'🎸', n:'Guitar'}, {i:'🎁', n:'Gift'}, {i:'🦒', n:'Giraffe'}]},
+            { u: 'H', l: 'h', ex: [{i:'👒', n:'Hat'}, {i:'🏠', n:'House'}, {i:'🐎', n:'Horse'}, {i:'🖐️', n:'Hand'}, {i:'🍔', n:'Hamburger'}]},
+            { u: 'I', l: 'i', ex: [{i:'🍦', n:'Ice-cream'}, {i:'❄️', n:'Igloo'}, {i:'🦎', n:'Iguana'}, {i:'🖋️', n:'Ink'}, {i:'🏝️', n:'Island'}]},
+            { u: 'J', l: 'j', ex: [{i:'🧃', n:'Juice'}, {i:'🧥', n:'Jacket'}, {i:'👾', n:'Jellyfish'}, {i:'🛫', n:'Jet'}, {i:'🫙', n:'Jar'}]},
+            { u: 'K', l: 'k', ex: [{i:'🪁', n:'Kite'}, {i:'🔑', n:'Key'}, {i:'👑', n:'King'}, {i:'🥝', n:'Kiwi'}, {i:'🐨', n:'Koala'}]},
+            { u: 'L', l: 'l', ex: [{i:'🦁', n:'Lion'}, {i:'🍋', n:'Lemon'}, {i:'💡', n:'Light'}, {i:'🍭', n:'Lollipop'}, {i:'🍃', n:'Leaf'}]},
+            { u: 'M', l: 'm', ex: [{i:'🐵', n:'Monkey'}, {i:'🌙', n:'Moon'}, {i:'🥛', n:'Milk'}, {i:'🐭', n:'Mouse'}, {i:'🍄', n:'Mushroom'}]},
+            { u: 'N', l: 'n', ex: [{i:'👃', n:'Nose'}, {i:'🪺', n:'Nest'}, {i:'🔩', n:'Nut'}, {i:'📓', n:'Notebook'}, {i:'🌉', n:'Night'}]},
+            { u: 'O', l: 'o', ex: [{i:'🐙', n:'Octopus'}, {i:'🍊', n:'Orange'}, {i:'🦉', n:'Owl'}, {i:'🧅', n:'Onion'}, {i:'🦪', n:'Oyster'}]},
+            { u: 'P', l: 'p', ex: [{i:'🐷', n:'Pig'}, {i:'🐼', n:'Panda'}, {i:'🍐', n:'Pear'}, {i:'✏️', n:'Pencil'}, {i:'🍕', n:'Pizza'}]},
+            { u: 'Q', l: 'q', ex: [{i:'👑', n:'Queen'}, {i:'❓', n:'Question'}, {i:'🤫', n:'Quiet'}, {i:'🧵', n:'Quilt'}, {i:'🦆', n:'Quack'}]},
+            { u: 'R', l: 'r', ex: [{i:'🐰', n:'Rabbit'}, {i:'🌈', n:'Rainbow'}, {i:'🤖', n:'Robot'}, {i:'💍', n:'Ring'}, {i:'🚀', n:'Rocket'}]},
+            { u: 'S', l: 's', ex: [{i:'☀️', n:'Sun'}, {i:'🐍', n:'Snake'}, {i:'🚢', n:'Ship'}, {i:'🍓', n:'Strawberry'}, {i:'⭐', n:'Star'}]},
+            { u: 'T', l: 't', ex: [{i:'🐯', n:'Tiger'}, {i:'🐢', n:'Turtle'}, {i:'🍅', n:'Tomato'}, {i:'🚂', n:'Train'}, {i:'🌳', n:'Tree'}]},
+            { u: 'U', l: 'u', ex: [{i:'☂️', n:'Umbrella'}, {i:'🦄', n:'Unicorn'}, {i:'⬆️', n:'Up'}, {i:'🩲', n:'Underwear'}, {i:'🥣', n:'Utensils'}]},
+            { u: 'V', l: 'v', ex: [{i:'🎻', n:'Violin'}, {i:'🚐', n:'Van'}, {i:'🌋', n:'Volcano'}, {i:'🏺', n:'Vase'}, {i:'🫑', n:'Vegetable'}]},
+            { u: 'W', l: 'w', ex: [{i:'🐳', n:'Whale'}, {i:'⌚', n:'Watch'}, {i:'🍉', n:'Watermelon'}, {i:'🕸️', n:'Web'}, {i:'🪟', n:'Window'}]},
+            { u: 'X', l: 'x', ex: [{i:'🪗', n:'Xylophone'}, {i:'🩻', n:'X-ray'}, {i:'🎄', n:'Xmas Tree'}, {i:'🦊', n:'Fox'}, {i:'📦', n:'Box'}]},
+            { u: 'Y', l: 'y', ex: [{i:'🪀', n:'Yo-yo'}, {i:'🟡', n:'Yellow'}, {i:'⛵', n:'Yacht'}, {i:'🍳', n:'Yolk'}, {i:'🐂', n:'Yak'}]},
+            { u: 'Z', l: 'z', ex: [{i:'🦓', n:'Zebra'}, {i:'⚡', n:'Zap'}, {i:'🤐', n:'Zipper'}, {i:'0️⃣', n:'Zero'}, {i:'🦁', n:'Zoo'}]}
+        ];
+
+        let currentIdx = 0;
+        let startIdx = 0;
+        let endIdx = 0;
+        let foundCount = 0;
+        let alphabetData = [];
+
+        function startGame(s, e) {
+            startIdx = s;
+            endIdx = e;
+            alphabetData = fullData.slice(s, e + 1);
+            currentIdx = 0;
+            document.getElementById('menu-screen').style.display = 'none';
+            loadLevel();
+        }
+
+        function loadLevel() {
+            const data = alphabetData[currentIdx];
+            document.getElementById('upper').innerText = data.u;
+            document.getElementById('lower').innerText = data.l;
+            
+            const groupTotal = alphabetData.length - 1;
+            const progress = groupTotal === 0 ? 100 : (currentIdx / groupTotal * 100);
+            document.getElementById('prog-pin').style.left = progress + '%';
+            
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('instruction').innerText = "打開 3 個盒子吧！🎁";
+            document.getElementById('count-text').innerText = "0";
+            
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            foundCount = 0;
+
+            data.ex.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back">
+                            <div class="icon">${item.i}</div>
+                            <div class="name">${item.n}</div>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => flipCard(card, index, item.n);
+                grid.appendChild(card);
+            });
+
+            speak(data.u);
+        }
+
+        function flipCard(card, idx, name) {
+            if (card.classList.contains('flipped') || foundCount >= 3) return;
+
+            card.classList.add('flipped');
+            foundCount++;
+            document.getElementById('count-text').innerText = foundCount;
+            
+            speak(`${alphabetData[currentIdx].u} for ${name}`);
+
+            if (foundCount === 3) {
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('instruction').innerText = "好棒！點下一步 ➔";
+            }
+        }
+
+        function speakLetter() {
+            speak(alphabetData[currentIdx].u);
+        }
+
+        function speak(text) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = 0.8;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(u);
+        }
+
+        function nextLevel() {
+            currentIdx++;
+            if (currentIdx >= alphabetData.length) {
+                document.getElementById('win-screen').style.display = 'flex';
+                document.getElementById('win-title').innerText = `${alphabetData[0].u}-${alphabetData[alphabetData.length-1].u} 完成！`;
+            } else {
+                loadLevel();
+            }
+        }
+    </script>
+</body>
+</html>
