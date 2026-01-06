@@ -362,7 +362,8 @@
             foundCount++;
             document.getElementById('count-text').innerText = foundCount;
             
-            speak(`${alphabetData[currentIdx].u} for ${name}`);
+            // 語音範例：將字母與單字分開讀，增加清晰度
+            speak(`${alphabetData[currentIdx].u} ... for ... ${name}`);
 
             if (foundCount === 3) {
                 document.getElementById('nextBtn').disabled = false;
@@ -377,7 +378,8 @@
         function speak(text) {
             const u = new SpeechSynthesisUtterance(text);
             u.lang = 'en-US';
-            u.rate = 0.8;
+            u.rate = 0.6; // 調整為更慢的語速 (原本是 0.8)
+            u.pitch = 1.1; // 稍微調高音調，聽起來更親切
             window.speechSynthesis.cancel();
             window.speechSynthesis.speak(u);
         }
